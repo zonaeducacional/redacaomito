@@ -52,7 +52,7 @@ export default function BioStage({ onNext, openGlossary }: StageProps) {
         >
           <div className="bg-slate-900 border-l-4 border-amber-500 rounded-2xl h-full min-h-64 flex flex-col items-center justify-center relative overflow-hidden">
             <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/8/88/Plato_Silanion_Musei_Capitolini_MC1377.jpg"
+              src="/busto.png"
               alt="Busto de Platão"
               fill
               className="object-cover opacity-80 mix-blend-luminosity hover:mix-blend-normal transition-all duration-500"

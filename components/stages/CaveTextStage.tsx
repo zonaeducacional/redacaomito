@@ -23,7 +23,7 @@ export default function CaveTextStage({ onNext, openGlossary }: StageProps) {
         transition={{ delay: 0.2 }}
       >
         <Image
-          src="https://www.anarquista.net/wp-content/uploads/2012/11/Alegoria-da-caverna-de-Plat%C3%A3o.jpg"
+          src="/caverna.png"
           alt="Alegoria da Caverna de Platão"
           fill
           className="object-cover mix-blend-luminosity opacity-40 hover:opacity-100 hover:mix-blend-normal transition-all duration-700"
