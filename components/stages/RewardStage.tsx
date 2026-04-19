@@ -73,33 +73,99 @@ export default function RewardStage() {
   }, []);
 
   const generatePDF = async () => {
-    if (!certRef.current) return;
     setIsGenerating(true);
     try {
-      // Small delay to ensure any dynamic content is settled
-      await new Promise(r => setTimeout(r, 500));
-      
-      const canvas = await html2canvas(certRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#020617',
-        logging: false,
-        width: 1123,
-        height: 794
-      });
-      
-      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'px',
         format: [1123, 794]
       });
+
+      // Background
+      pdf.setFillColor(2, 6, 23); // bg-slate-950 approx
+      pdf.rect(0, 0, 1123, 794, 'F');
+
+      // Decorative Borders
+      pdf.setDrawColor(245, 158, 11); // amber-500
+      pdf.setLineWidth(4);
+      pdf.rect(20, 20, 1083, 754, 'S');
+      pdf.setLineWidth(1);
+      pdf.rect(40, 40, 1043, 714, 'S');
+
+      // Sun Icon Drawing (Simplified)
+      pdf.setDrawColor(245, 158, 11);
+      pdf.setLineWidth(4);
+      pdf.circle(561, 150, 30, 'S');
+      for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI) / 4;
+        const x1 = 561 + Math.cos(angle) * 40;
+        const y1 = 150 + Math.sin(angle) * 40;
+        const x2 = 561 + Math.cos(angle) * 60;
+        const y2 = 150 + Math.sin(angle) * 60;
+        pdf.line(x1, y1, x2, y2);
+      }
+
+      // Title
+      pdf.setTextColor(251, 191, 36); // amber-400
+      pdf.setFont('times', 'bold');
+      pdf.setFontSize(60);
+      pdf.text('CERTIFICADO', 561, 240, { align: 'center' });
       
-      pdf.addImage(imgData, 'PNG', 0, 0, 1123, 794);
-      pdf.save(`Certificado_Mito_da_Caverna.pdf`);
+      pdf.setTextColor(148, 163, 184); // slate-400
+      pdf.setFontSize(24);
+      pdf.setFont('times', 'normal');
+      pdf.text('DE CONSCIÊNCIA CRÍTICA', 561, 280, { align: 'center' });
+
+      // Student Name
+      pdf.setTextColor(148, 163, 184);
+      pdf.setFontSize(20);
+      pdf.text('Certificamos que', 561, 340, { align: 'center' });
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(50);
+      pdf.setFont('times', 'italic');
+      pdf.text((name || 'ALUNO(A)').toUpperCase(), 561, 400, { align: 'center' });
+      pdf.setDrawColor(245, 158, 11);
+      pdf.line(300, 410, 823, 410);
+
+      // Description
+      pdf.setTextColor(203, 213, 225); // slate-300
+      pdf.setFontSize(18);
+      pdf.setFont('times', 'normal');
+      const desc = 'completou com sucesso o exercício de construção de texto dissertativo-argumentativo através da Alegoria da Caverna. Adquiriu as bases da análise crítica e assumiu o compromisso da Práxis em prol da autonomia do pensamento na sociedade contemporânea.';
+      const splitDesc = pdf.splitTextToSize(desc, 800);
+      pdf.text(splitDesc, 561, 460, { align: 'center' });
+
+      // Scores Table
+      pdf.setDrawColor(51, 65, 85); // slate-700
+      pdf.line(200, 560, 923, 560);
+      pdf.line(200, 660, 923, 660);
+
+      pdf.setTextColor(148, 163, 184);
+      pdf.setFontSize(14);
+      pdf.text('QUIZ', 280, 590, { align: 'center' });
+      pdf.text('REFLEXÃO', 440, 590, { align: 'center' });
+      pdf.text('DISSERTAÇÃO', 600, 590, { align: 'center' });
+      pdf.setTextColor(245, 158, 11);
+      pdf.text('NOTA FINAL', 800, 590, { align: 'center' });
+
+      pdf.setTextColor(251, 191, 36);
+      pdf.setFontSize(24);
+      pdf.text(scores.quiz.toFixed(2), 280, 630, { align: 'center' });
+      pdf.text(scores.reflexao.toFixed(2), 440, 630, { align: 'center' });
+      pdf.text(scores.redacao.toFixed(2), 600, 630, { align: 'center' });
+      pdf.setFontSize(32);
+      pdf.text(scores.total.toFixed(2), 800, 630, { align: 'center' });
+
+      // Date
+      pdf.setTextColor(100, 116, 139); // slate-500
+      pdf.setFontSize(14);
+      pdf.text(`DATA DE EMISSÃO: ${new Date().toLocaleDateString('pt-BR')}`, 561, 720, { align: 'center' });
+
+      pdf.save(`Certificado_A_Caverna.pdf`);
     } catch (error) {
       console.error('Error generating PDF', error);
-      alert('Erro ao gerar o PDF. Por favor, tente novamente.');
+      alert('Houve um erro técnico. Tente novamente.');
     } finally {
       setIsGenerating(false);
     }
