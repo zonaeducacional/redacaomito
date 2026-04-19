@@ -159,11 +159,114 @@ export default function RewardStage() {
       pdf.setFontSize(9);
       pdf.text(`DATA DE EMISSÃO: ${new Date().toLocaleDateString('pt-BR')}`, width / 2, 200, { align: 'center' });
 
-      // Download Direto
-      pdf.save('Certificado_Mito_da_Caverna.pdf');
+      // Gerar Data URI com MIME tipo forçado para download
+      const pdfDataUri = pdf.output('datauristring').replace(/^data:application\/pdf;/, 'data:application/octet-stream;');
+      
+      const link = document.createElement('a');
+      link.href = pdfDataUri;
+      link.download = 'Certificado_Mito_da_Caverna.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
     } catch (error: any) {
       console.error('Error generating PDF', error);
       alert('Erro técnico: ' + (error.message || 'Erro desconhecido'));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const openPDF = () => {
+    try {
+      const pdf = new jsPDF('l', 'mm', 'a4');
+      // ... (mesma lógica de desenho, vou simplificar aqui ou repetir)
+      // Para ser rápido, vou apenas chamar o desenho novamente
+      drawPDF(pdf); 
+      pdf.output('dataurlnewwindow');
+    } catch (e) {
+      alert('Erro ao abrir: ' + e);
+    }
+  };
+
+  // Função auxiliar para evitar repetição de código de desenho
+  const drawPDF = (pdf: any) => {
+    const width = 297;
+    const height = 210;
+    pdf.setFillColor(2, 6, 23);
+    pdf.rect(0, 0, width, height, 'F');
+    pdf.setDrawColor(245, 158, 11);
+    pdf.setLineWidth(1);
+    pdf.rect(5, 5, width - 10, height - 10, 'S');
+    pdf.setLineWidth(0.2);
+    pdf.rect(7, 7, width - 14, height - 14, 'S');
+    pdf.setDrawColor(245, 158, 11);
+    pdf.setLineWidth(1);
+    pdf.circle(width / 2, 40, 8, 'S');
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI) / 4;
+      pdf.line(width / 2 + Math.cos(angle) * 10, 40 + Math.sin(angle) * 10, width / 2 + Math.cos(angle) * 14, 40 + Math.sin(angle) * 14);
+    }
+    pdf.setTextColor(251, 191, 36);
+    pdf.setFont('times', 'bold');
+    pdf.setFontSize(40);
+    pdf.text('CERTIFICADO', width / 2, 70, { align: 'center' });
+    pdf.setTextColor(148, 163, 184);
+    pdf.setFontSize(16);
+    pdf.setFont('times', 'normal');
+    pdf.text('DE CONSCIÊNCIA CRÍTICA', width / 2, 80, { align: 'center' });
+    pdf.setTextColor(148, 163, 184);
+    pdf.setFontSize(12);
+    pdf.text('Certificamos que', width / 2, 100, { align: 'center' });
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(30);
+    pdf.setFont('times', 'italic');
+    pdf.text((name || 'ALUNO(A)').toUpperCase(), width / 2, 115, { align: 'center' });
+    pdf.setDrawColor(245, 158, 11);
+    pdf.line(width / 2 - 60, 118, width / 2 + 60, 118);
+    pdf.setTextColor(203, 213, 225);
+    pdf.setFontSize(11);
+    pdf.setFont('times', 'normal');
+    const desc = 'completou com sucesso o exercício de construção de texto dissertativo-argumentativo através da Alegoria da Caverna. Adquiriu as bases da análise crítica e assumiu o compromisso da Práxis em prol da autonomia do pensamento na sociedade contemporânea.';
+    const splitDesc = pdf.splitTextToSize(desc, 220);
+    pdf.text(splitDesc, width / 2, 135, { align: 'center' });
+    pdf.setDrawColor(51, 65, 85);
+    pdf.line(50, 160, width - 50, 160);
+    pdf.line(50, 185, width - 50, 185);
+    pdf.setTextColor(148, 163, 184);
+    pdf.setFontSize(9);
+    pdf.text('QUIZ', 75, 168, { align: 'center' });
+    pdf.text('REFLEXÃO', 125, 168, { align: 'center' });
+    pdf.text('DISSERTAÇÃO', 175, 168, { align: 'center' });
+    pdf.setTextColor(245, 158, 11);
+    pdf.text('NOTA FINAL', 225, 168, { align: 'center' });
+    pdf.setTextColor(251, 191, 36);
+    pdf.setFontSize(14);
+    pdf.text(scores.quiz.toFixed(2), 75, 178, { align: 'center' });
+    pdf.text(scores.reflexao.toFixed(2), 125, 178, { align: 'center' });
+    pdf.text(scores.redacao.toFixed(2), 175, 178, { align: 'center' });
+    pdf.setFontSize(18);
+    pdf.text(scores.total.toFixed(2), 225, 178, { align: 'center' });
+    pdf.setTextColor(100, 116, 139);
+    pdf.setFontSize(9);
+    pdf.text(`DATA DE EMISSÃO: ${new Date().toLocaleDateString('pt-BR')}`, width / 2, 200, { align: 'center' });
+  };
+
+  const generateAndDownload = () => {
+    setIsGenerating(true);
+    try {
+      const pdf = new jsPDF('l', 'mm', 'a4');
+      drawPDF(pdf);
+      
+      const pdfDataUri = pdf.output('datauristring').replace(/^data:application\/pdf;/, 'data:application/octet-stream;');
+      const link = document.createElement('a');
+      link.href = pdfDataUri;
+      link.download = 'Certificado_Mito.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e: any) {
+      alert('Erro: ' + e.message);
     } finally {
       setIsGenerating(false);
     }
@@ -219,13 +322,23 @@ export default function RewardStage() {
             <div className="flex justify-between font-bold text-amber-500 pt-2 border-t border-slate-700/50"><span>NOTA FINAL:</span> <span>{scores.total.toFixed(2)} / 2.00</span></div>
           </div>
 
-          <button 
-            disabled={!name || isGenerating}
-            onClick={generatePDF}
-            className="w-full mt-6 bg-slate-100 hover:bg-white text-slate-900 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed p-4 rounded-xl font-bold uppercase tracking-wider text-xs flex justify-center items-center gap-2 transition-colors"
-          >
-            {isGenerating ? 'Gerando...' : 'Baixar Certificado em PDF (v1.2)'} <Download size={16} />
-          </button>
+          <div className="flex flex-col gap-3 mt-6">
+            <button 
+              disabled={!name || isGenerating}
+              onClick={generateAndDownload}
+              className="w-full bg-slate-100 hover:bg-white text-slate-900 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed p-4 rounded-xl font-bold uppercase tracking-wider text-xs flex justify-center items-center gap-2 transition-colors"
+            >
+              {isGenerating ? 'Gerando...' : 'Baixar Certificado (v1.3)'} <Download size={16} />
+            </button>
+            
+            <button 
+              disabled={!name || isGenerating}
+              onClick={openPDF}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-50 p-4 rounded-xl font-bold uppercase tracking-wider text-[10px] flex justify-center items-center gap-2 transition-colors border border-slate-700"
+            >
+              Abrir Certificado em Nova Aba (Caso o download falhe)
+            </button>
+          </div>
         </div>
       </motion.div>
 
