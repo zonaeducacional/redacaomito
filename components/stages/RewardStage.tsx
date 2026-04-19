@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Award, Sun, Sparkles, Download } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 interface StageProps {
@@ -162,7 +161,21 @@ export default function RewardStage() {
       pdf.setFontSize(14);
       pdf.text(`DATA DE EMISSÃO: ${new Date().toLocaleDateString('pt-BR')}`, 561, 720, { align: 'center' });
 
-      pdf.save(`Certificado_A_Caverna.pdf`);
+      const blob = pdf.output('blob');
+      const fileName = `Certificado_Mito_da_Caverna.pdf`;
+      
+      if (window.navigator && (window.navigator as any).msSaveOrOpenBlob) {
+        (window.navigator as any).msSaveOrOpenBlob(blob, fileName);
+      } else {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Error generating PDF', error);
       alert('Houve um erro técnico. Tente novamente.');
