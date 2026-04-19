@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Award, Sun, Sparkles, Download } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { toPng } from 'html-to-image';
+import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 interface StageProps {
@@ -76,16 +76,30 @@ export default function RewardStage() {
     if (!certRef.current) return;
     setIsGenerating(true);
     try {
-      const imgData = await toPng(certRef.current, { pixelRatio: 2, cacheBust: true });
+      // Small delay to ensure any dynamic content is settled
+      await new Promise(r => setTimeout(r, 500));
+      
+      const canvas = await html2canvas(certRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#020617',
+        logging: false,
+        width: 1123,
+        height: 794
+      });
+      
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'px',
         format: [1123, 794]
       });
+      
       pdf.addImage(imgData, 'PNG', 0, 0, 1123, 794);
-      pdf.save(`Certificado_${name.replace(/\s+/g, '_') || 'Crítico'}_A_Caverna.pdf`);
+      pdf.save(`Certificado_Mito_da_Caverna.pdf`);
     } catch (error) {
       console.error('Error generating PDF', error);
+      alert('Erro ao gerar o PDF. Por favor, tente novamente.');
     } finally {
       setIsGenerating(false);
     }
@@ -151,8 +165,19 @@ export default function RewardStage() {
         </div>
       </motion.div>
 
-      {/* Hidden Layout for PDF Canvas */}
-      <div className="absolute top-0 left-[-9999px] overflow-hidden bg-white">
+      {/* Hidden Layout for PDF Canvas - Adjusted for better browser rendering */}
+      <div 
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '1123px', 
+          height: '794px', 
+          zIndex: -9999, 
+          pointerEvents: 'none', 
+          opacity: 0
+        }}
+      >
         <div 
           ref={certRef} 
           className="bg-slate-950 text-slate-100 w-[1123px] h-[794px] p-16 flex flex-col items-center justify-center relative font-serif"
